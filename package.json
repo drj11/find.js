@@ -4,7 +4,7 @@
   "description": "POSIX compliant find",
   "main": "code/find",
   "scripts": {
-    "test": "FIND=code/find node_modules/.bin/urchin test"
+    "test": "FIND=${FIND:-$(pwd)/code/find} node_modules/.bin/urchin test"
   },
   "repository": "",
   "author": "David Jones <drj@pobox.com>",
@@ -12,6 +12,9 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "async": "~0.28"
+  },
+  "devDependencies": {
+    "urchin": "*"
   },
   "gitHead": "71b309b222fb2d3a1f1b116255eec1c103ded537"
 }

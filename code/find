@@ -8,9 +8,8 @@ mapdir = (dir) ->
     if err
       throw err
     async.each names, (name, cb) ->
-      console.log name
+      console.log "#{dir}/#{name}"
       cb()
     , process.exit
 
-console.log process.argv
 mapdir process.argv[2]
