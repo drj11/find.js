@@ -2,10 +2,13 @@
 
 alias find=${FIND:-find}
 
-res=$(find .fixture/d | sort)
+res=$(find .fixture | sort)
 echo $res
 case $res in
-  ('.fixture/d
+  ('.fixture
+.fixture/a
+.fixture/b
+.fixture/d
 .fixture/d/e
 .fixture/d/f') ;;
   (*) exit 9 ;;

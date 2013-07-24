@@ -3,13 +3,22 @@
 fs = require 'fs'
 async = require 'async'
 
-mapdir = (dir) ->
+one = (name, cb) ->
+  console.log name
+  fs.stat name, (err, st) ->
+    if err
+      throw err
+    if st.isDirectory()
+      mapdir name, cb
+    else
+      cb()
+
+mapdir = (dir, done) ->
   fs.readdir dir, (err, names) ->
     if err
       throw err
     async.each names, (name, cb) ->
-      console.log "#{dir}/#{name}"
-      cb()
-    , process.exit
+      one "#{dir}/#{name}", cb
+    , done
 
-mapdir process.argv[2]
+one process.argv[2], process.exit
