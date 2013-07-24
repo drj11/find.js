@@ -1,8 +1,16 @@
 #!/usr/bin/env coffee
 
 fs = require 'fs'
+async = require 'async'
 
-fs.readdir '.', (err, names) ->
-  if err
-    throw err
-  console.log names
+mapdir = (dir) ->
+  fs.readdir dir, (err, names) ->
+    if err
+      throw err
+    async.each names, (name, cb) ->
+      console.log name
+      cb()
+    , process.exit
+
+console.log process.argv
+mapdir process.argv[2]

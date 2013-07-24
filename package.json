@@ -10,5 +10,8 @@
   "author": "David Jones <drj@pobox.com>",
   "license": "BSD",
   "readmeFilename": "README.md",
+  "dependencies": {
+    "async": "~0.28"
+  },
   "gitHead": "71b309b222fb2d3a1f1b116255eec1c103ded537"
 }
