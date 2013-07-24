@@ -1,0 +1,14 @@
+{
+  "name": "find.js",
+  "version": "0.0.0",
+  "description": "POSIX compliant find",
+  "main": "code/find",
+  "scripts": {
+    "test": "FIND=code/find node_modules/.bin/urchin test"
+  },
+  "repository": "",
+  "author": "David Jones <drj@pobox.com>",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "gitHead": "71b309b222fb2d3a1f1b116255eec1c103ded537"
+}

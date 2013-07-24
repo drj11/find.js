@@ -1,0 +1,8 @@
+#!/usr/bin/env coffee
+
+fs = require 'fs'
+
+fs.readdir '.', (err, names) ->
+  if err
+    throw err
+  console.log names
