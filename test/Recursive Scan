@@ -1,0 +1,15 @@
+#!/bin/sh
+
+alias find=${FIND:-find}
+
+res=$(find .fixture | sort)
+echo $res
+case $res in
+  ('.fixture
+.fixture/a
+.fixture/b
+.fixture/d
+.fixture/d/e
+.fixture/d/f') ;;
+  (*) exit 9 ;;
+esac
