@@ -14,9 +14,14 @@ evalExpression = (name, expression, cb) ->
       return evalExpression name, expression[1..], cb
     when '-type'
       return fs.stat name, (err, stat) ->
-        if expression[1] == 'f' and stat.isFile()
+        if expression[1] == 'f'
+          v = stat.isFile()
+        if expression[1] == 'd'
+          v = stat.isDirectory()
+        if v
           return evalExpression name, expression[2..], cb
-        return cb()
+        else
+          return cb()
   console.warn "Unknown expression #{expression}"
   return cb()
 
