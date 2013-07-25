@@ -3,22 +3,64 @@
 fs = require 'fs'
 async = require 'async'
 
-one = (name, cb) ->
-  console.log name
-  fs.stat name, (err, st) ->
-    if err
-      throw err
-    if st.isDirectory()
-      mapdir name, cb
-    else
-      cb()
+OUT = process.stdout
 
-mapdir = (dir, done) ->
+evalExpression = (name, expression, cb) ->
+  if expression.length == 0
+    return cb()
+  switch expression[0]
+    when '-print'
+      OUT.write name + '\n'
+      return evalExpression name, expression[1..], cb
+    when '-type'
+      return fs.stat name, (err, stat) ->
+        if expression[1] == 'f' and stat.isFile()
+          return evalExpression name, expression[2..], cb
+        return cb()
+  console.warn "Unknown expression #{expression}"
+  return cb()
+
+one = (name, expression, cb) ->
+  evalExpression name, expression, ->
+    fs.stat name, (err, st) ->
+      if err
+        throw err
+      if st.isDirectory()
+        mapdir name, expression, cb
+      else
+        cb()
+
+mapdir = (dir, expression, done) ->
   fs.readdir dir, (err, names) ->
     if err
       throw err
     async.each names, (name, cb) ->
-      one "#{dir}/#{name}", cb
+      newname = pathjoin dir, name
+      one "#{newname}", expression, cb
     , done
 
-one process.argv[2], process.exit
+pathjoin = (dir, name) ->
+  if /\/$/.test dir
+    return dir + name
+  else
+    return dir + "/" + name
+
+parseArguments = (args) ->
+  files = []
+  expression = []
+  for v,i in args
+    if /^-/.test v
+      expression = args[i..]
+      break
+    else
+      files.push v
+  # :todo: should really test for any action, not just -print
+  if '-print' not in expression
+    expression.push '-print'
+  return [files, expression]
+
+[files, expression] = parseArguments process.argv[2..]
+
+async.each files, (name, cb) ->
+  one name, expression, cb
+, process.exit
