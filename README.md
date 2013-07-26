@@ -5,7 +5,7 @@ compliant yet)
 
 # Where
 
-github.com/drj11/find.js
+https://github.com/drj11/find.js
 
 # Implementation Status
 
