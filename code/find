@@ -49,6 +49,8 @@ compileExpression = (expression) ->
   return parsed
 
 parseAnd = (expression) ->
+  if /descent/.test process.env.FIND_DEBUG
+    console.warn expression
   if expression[0] == '('
     [L, tail] = parseExpression expression[1..]
     if tail[0] != ')'
