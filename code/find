@@ -46,7 +46,6 @@ compileExpression = (expression) ->
   if '-print' not in expression and '-exec' not in expression and '-ok' not in expression
     expression = ['('].concat expression, [')', '-print']
   [parsed, tail] = parseExpression expression
-  console.warn "PARSED", parsed
   return parsed
 
 parseAnd = (expression) ->
