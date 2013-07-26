@@ -11,6 +11,8 @@ evalExpression = (name, environment, node, cb) ->
   """*node* is a compiled node object, as returned by
   compileExpression."""
   switch node.op
+    when '-depth'
+      return cb true
     when '-print'
       OUT.write name + '\n'
       return cb true
@@ -48,15 +50,21 @@ evalExpression = (name, environment, node, cb) ->
 
 # Not really a compiler, but there are some source to source
 # transformations we do to add an implicit -print.
-compileExpression = (expression) ->
-  if expression.length == 0
-    expression.push '-print'
-  if '-print' not in expression and '-exec' not in expression and '-ok' not in expression
-    expression = ['('].concat expression, [')', '-print']
-  [parsed, tail] = parseExpression expression
+compileExpression = (tokenList) ->
+  environment = {}
+  if tokenList.length == 0
+    tokenList.push '-print'
+  if '-print' not in tokenList and '-exec' not in tokenList and '-ok' not in tokenList
+    tokenList = ['('].concat tokenList, [')', '-print']
+  # Set .depth when -depth is used.
+  # :todo: ideally we'd remove these '-depth' tokens, but we
+  # can't do that easily as it might upset the syntax (for
+  # example, 'find . -type -a -depth' is valid)
+  environment.depth = ('-depth' in tokenList)
+  [parsed, tail] = parseExpression tokenList
   if /parse/.test process.env.FIND_DEBUG
     console.warn util.inspect parsed, depth: Infinity
-  return { environment:{}, tree: parsed }
+  return { environment: environment, tree: parsed }
 
 # operator precedence table
 PREC =
