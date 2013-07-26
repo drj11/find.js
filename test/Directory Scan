@@ -2,7 +2,7 @@
 
 alias find=${FIND:-find}
 
-res=$(find .fixture -type d | sort)
+res=$(find .fixture -type d)
 echo $res
 case $res in
   ('.fixture
