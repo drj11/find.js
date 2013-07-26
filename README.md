@@ -15,3 +15,4 @@ github.com/drj11/find.js
 * `-size`
 * `-print`
 * implicit `-print`
+* implicit `-a`
