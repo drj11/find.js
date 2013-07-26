@@ -7,7 +7,7 @@ async = require 'async'
 
 OUT = process.stdout
 
-evalExpression = (name, node, cb) ->
+evalExpression = (name, environment, node, cb) ->
   """*node* is a compiled node object, as returned by
   compileExpression."""
   switch node.op
@@ -32,17 +32,17 @@ evalExpression = (name, node, cb) ->
           v = stat.isDirectory()
         return cb v
     when '-a'
-      return evalExpression name, node.arg[0], (res) ->
+      return evalExpression name, environment, node.arg[0], (res) ->
         if not res
           cb res
         else
-          evalExpression name, node.arg[1], cb
+          evalExpression name, environment, node.arg[1], cb
     when '-o'
-      return evalExpression name, node.arg[0], (res) ->
+      return evalExpression name, environment, node.arg[0], (res) ->
         if res
           cb res
         else
-          evalExpression name, node.arg[1], cb
+          evalExpression name, environment, node.arg[1], cb
   console.warn "Unknown expression", node
   return cb()
 
@@ -56,7 +56,7 @@ compileExpression = (expression) ->
   [parsed, tail] = parseExpression expression
   if /parse/.test process.env.FIND_DEBUG
     console.warn util.inspect parsed, depth: Infinity
-  return parsed
+  return { environment:{}, tree: parsed }
 
 # operator precedence table
 PREC =
@@ -112,7 +112,7 @@ parseExpression = (exp) ->
   
 
 one = (name, expression, cb) ->
-  evalExpression name, expression, ->
+  evalExpression name, expression.environment, expression.tree, ->
     fs.stat name, (err, st) ->
       if err
         throw err
