@@ -1,0 +1,11 @@
+#!/bin/sh
+
+alias find=${FIND:-find}
+
+cd ..
+res=$(find .fixture -type f -a -size +1 | sort)
+echo $res
+case $res in
+  ('.fixture/d/e') ;;
+  (*) exit 9 ;;
+esac
