@@ -15,5 +15,6 @@ github.com/drj11/find.js
 * `-type f` and `-type d`
 * `-size`
 * `-print`
+* `-depth`
 * implicit `-print`
 * implicit `-a`
