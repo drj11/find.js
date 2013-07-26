@@ -1,6 +1,8 @@
 #!/usr/bin/env coffee
 
 fs = require 'fs'
+util = require 'util'
+
 async = require 'async'
 
 OUT = process.stdout
@@ -52,15 +54,22 @@ compileExpression = (expression) ->
   if '-print' not in expression and '-exec' not in expression and '-ok' not in expression
     expression = ['('].concat expression, [')', '-print']
   [parsed, tail] = parseExpression expression
+  if /parse/.test process.env.FIND_DEBUG
+    console.warn util.inspect parsed, depth: Infinity
   return parsed
 
-parseAnd = (expression) ->
+# operator precedence table
+PREC =
+  o: 4
+  a: 8
+
+parsePrec = (expression, precedence) ->
   if /descent/.test process.env.FIND_DEBUG
     console.warn expression
   if expression[0] == '('
     [L, tail] = parseExpression expression[1..]
     if tail[0] != ')'
-      throw 'mismatched paren' + expression
+      throw 'mismatched paren ' + expression + tail
     tail.shift()
   else if expression[0] in ['-name', '-path', '-perm',
     '-type', '-links', '-user', '-group',
@@ -74,22 +83,32 @@ parseAnd = (expression) ->
     # All the 0-ary operators.
     L = { op: expression[0] }
     tail = expression[1..]
+  reduceTail L, tail, precedence
+
+reduceTail = (L, tail, precedence) ->
   if tail.length == 0
     return [L, tail]
   if tail[0] == ')'
     return [L, tail]
   if tail[0] == '-o'
-    [R, tail] = parseAnd tail[1..]
-    node = { op: '-o', arg: [L, R] }
-    return [node, tail]
+    if precedence <= PREC.o
+      [R, tail] = parsePrec tail[1..], PREC.o
+      node = { op: '-o', arg: [L, R] }
+      return reduceTail node, tail, precedence
+    else
+      return [L, tail]
   if tail[0] == '-a'
     # -a is optional between expressions.
     tail = tail[1..]
-  [R, tail] = parseAnd tail
-  node = { op: '-a', arg: [L, R] }
-  return [node, tail]
+  if precedence <= PREC.a
+    [R, tail] = parsePrec tail, PREC.a
+    node = { op: '-a', arg: [L, R] }
+    return reduceTail node, tail, precedence
+  else
+    return [L, tail]
 
-parseExpression = parseAnd
+parseExpression = (exp) ->
+  parsePrec exp, 0
   
 
 one = (name, expression, cb) ->
