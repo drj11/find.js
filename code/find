@@ -113,7 +113,9 @@ parseArguments = (args) ->
   files = []
   expression = []
   for v,i in args
-    if /^-/.test v
+    # The first argument that is '!' or ')' or starts with a '-'
+    # marks the start of the expression.
+    if /^(-|!$|\($)/.test v
       expression = args[i..]
       break
     else
