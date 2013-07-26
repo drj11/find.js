@@ -12,6 +12,16 @@ evalExpression = (name, node, cb) ->
     when '-print'
       OUT.write name + '\n'
       return cb true
+    when '-size'
+      return fs.stat name, (err, stat) ->
+        s = Math.ceil(stat.size / 512)
+        x = node.arg[0]
+        if x[0] == '+'
+          cb(s > +x)
+        else if x[0] == '-'
+          cb(s < -x)
+        else
+          cb(s == +x)
     when '-type'
       return fs.stat name, (err, stat) ->
         if node.arg == 'f'
