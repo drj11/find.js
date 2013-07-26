@@ -7,17 +7,19 @@ async = require 'async'
 
 OUT = process.stdout
 
-evalExpression = (name, environment, node, cb) ->
-  """*node* is a compiled node object, as returned by
+evalExpression = (file, environment, node, cb) ->
+  """*file* is an object with a .name property and a
+  .stat method.
+  *node* is a compiled node object, as returned by
   compileExpression."""
   switch node.op
     when '-depth'
       return cb true
     when '-print'
-      OUT.write name + '\n'
+      OUT.write file.name + '\n'
       return cb true
     when '-size'
-      return fs.stat name, (err, stat) ->
+      return file.stat (err, stat) ->
         s = Math.ceil(stat.size / 512)
         x = node.arg
         if x[0] == '+'
@@ -27,26 +29,41 @@ evalExpression = (name, environment, node, cb) ->
         else
           cb(s == +x)
     when '-type'
-      return fs.stat name, (err, stat) ->
+      return file.stat (err, stat) ->
         if node.arg == 'f'
           v = stat.isFile()
         if node.arg == 'd'
           v = stat.isDirectory()
+        if node.arg == 'l'
+          v = stat.isSymbolicLink()
         return cb v
     when '-a'
-      return evalExpression name, environment, node.arg[0], (res) ->
+      return evalExpression file, environment, node.arg[0], (res) ->
         if not res
           cb res
         else
-          evalExpression name, environment, node.arg[1], cb
+          evalExpression file, environment, node.arg[1], cb
     when '-o'
-      return evalExpression name, environment, node.arg[0], (res) ->
+      return evalExpression file, environment, node.arg[0], (res) ->
         if res
           cb res
         else
-          evalExpression name, environment, node.arg[1], cb
+          evalExpression file, environment, node.arg[1], cb
   console.warn "Unknown expression", node
   return cb()
+
+class File
+  constructor: (@name) ->
+
+  stat: (cb) ->
+    if @_stat
+      return cb null, @_stat
+    # :todo: stat vs lstat should be under control of -H and
+    # -L options.
+    fs.lstat @name, (err, stat) =>
+      if not err
+        @_stat = stat
+      cb err, stat
 
 # Not really a compiler, but there are some source to source
 # transformations we do to add an implicit -print.
@@ -119,33 +136,33 @@ parseExpression = (exp) ->
   parsePrec exp, 0
   
 
-one = (name, expression, cb) ->
-  evalExpression name, expression.environment, expression.tree, ->
-    fs.stat name, (err, st) ->
+one = (file, expression, cb) ->
+  evalExpression file, expression.environment, expression.tree, ->
+    file.stat (err, st) ->
       if err
         throw err
       if st.isDirectory()
-        mapdir name, expression, cb
+        mapdir file, expression, cb
       else
         cb()
 
-oneDepth = (name, expression, cb) ->
-  fs.stat name, (err, st) ->
+oneDepth = (file, expression, cb) ->
+  file.stat (err, st) ->
     if err
       throw err
     if st.isDirectory()
-      mapdir name, expression, ->
-        evalExpression name, expression.environment, expression.tree, cb
+      mapdir file, expression, ->
+        evalExpression file, expression.environment, expression.tree, cb
     else
-      evalExpression name, expression.environment, expression.tree, cb
+      evalExpression file, expression.environment, expression.tree, cb
 
-mapdir = (dir, expression, done) ->
-  fs.readdir dir, (err, names) ->
+mapdir = (file, expression, done) ->
+  fs.readdir file.name, (err, names) ->
     if err
       throw err
     async.each names, (name, cb) ->
-      newname = pathjoin dir, name
-      one "#{newname}", expression, cb
+      newname = pathjoin file.name, name
+      one (new File(newname)), expression, cb
     , done
 
 pathjoin = (dir, name) ->
@@ -174,5 +191,5 @@ if compiled.environment.depth
   one = oneDepth
 
 async.each files, (name, cb) ->
-  one name, compiled, cb
+  one (new File(name)), compiled, cb
 , process.exit

@@ -3,10 +3,9 @@
 alias find=${FIND:-find}
 
 cd ..
-res=$(find .fixture -type d)
+res=$(find .fixture/t -type d)
 echo $res
 case $res in
-  ('.fixture
-.fixture/d') ;;
+  ('.fixture/t') ;;
   (*) exit 9 ;;
 esac

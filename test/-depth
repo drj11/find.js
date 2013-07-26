@@ -2,10 +2,10 @@
 
 alias find=${FIND:-find}
 
-res=$(find .fixture -depth -type d)
+res=$(find .fixture/single -depth -type d)
 echo $res
 case $res in
-  ('.fixture/d
-.fixture') ;;
+  ('.fixture/single/sub
+.fixture/single') ;;
   (*) exit 9 ;;
 esac
