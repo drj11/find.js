@@ -129,6 +129,16 @@ one = (name, expression, cb) ->
       else
         cb()
 
+oneDepth = (name, expression, cb) ->
+  fs.stat name, (err, st) ->
+    if err
+      throw err
+    if st.isDirectory()
+      mapdir name, expression, ->
+        evalExpression name, expression.environment, expression.tree, cb
+    else
+      evalExpression name, expression.environment, expression.tree, cb
+
 mapdir = (dir, expression, done) ->
   fs.readdir dir, (err, names) ->
     if err
@@ -160,6 +170,8 @@ parseArguments = (args) ->
 [files, expression] = parseArguments process.argv[2..]
 
 compiled = compileExpression expression
+if compiled.environment.depth
+  one = oneDepth
 
 async.each files, (name, cb) ->
   one name, compiled, cb

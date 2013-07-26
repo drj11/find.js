@@ -1,0 +1,11 @@
+#!/bin/sh
+
+alias find=${FIND:-find}
+
+res=$(find .fixture -depth -type d)
+echo $res
+case $res in
+  ('.fixture/d
+.fixture') ;;
+  (*) exit 9 ;;
+esac
