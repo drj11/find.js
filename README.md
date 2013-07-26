@@ -11,6 +11,7 @@ github.com/drj11/find.js
 
 ## Implemented
 
+* `-a` and `-o` with correct precedence
 * `-type f` and `-type d`
 * `-size`
 * `-print`
