@@ -35,6 +35,12 @@ evalExpression = (name, node, cb) ->
           cb res
         else
           evalExpression name, node.arg[1], cb
+    when '-o'
+      return evalExpression name, node.arg[0], (res) ->
+        if res
+          cb res
+        else
+          evalExpression name, node.arg[1], cb
   console.warn "Unknown expression", node
   return cb()
 
@@ -73,7 +79,7 @@ parseAnd = (expression) ->
   if tail[0] == ')'
     return [L, tail]
   if tail[0] == '-o'
-    [R, tail] = parseAnd tail
+    [R, tail] = parseAnd tail[1..]
     node = { op: '-o', arg: [L, R] }
     return [node, tail]
   if tail[0] == '-a'
