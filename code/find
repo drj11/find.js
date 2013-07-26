@@ -15,7 +15,7 @@ evalExpression = (name, node, cb) ->
     when '-size'
       return fs.stat name, (err, stat) ->
         s = Math.ceil(stat.size / 512)
-        x = node.arg[0]
+        x = node.arg
         if x[0] == '+'
           cb(s > +x)
         else if x[0] == '-'
