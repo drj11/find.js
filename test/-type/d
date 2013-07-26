@@ -2,6 +2,7 @@
 
 alias find=${FIND:-find}
 
+cd ..
 res=$(find .fixture -type d)
 echo $res
 case $res in
