@@ -20,8 +20,14 @@ evalExpression = (file, environment, node, cb) ->
       return cb true
     when '-size'
       return file.stat (err, stat) ->
-        s = Math.ceil(stat.size / 512)
         x = node.arg
+        s = stat.size
+        if /c$/.test x
+          # Removing trailing 'c'.
+          x = x[..-2]
+        else
+          # Measure in blocks (rounded up).
+          s = Math.ceil(s / 512)
         if x[0] == '+'
           cb(s > +x)
         else if x[0] == '-'

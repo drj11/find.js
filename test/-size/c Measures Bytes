@@ -1,0 +1,11 @@
+#!/bin/sh
+
+alias find=${FIND:-find}
+
+cd ..
+res=$(find .fixture/s -size 504c)
+echo $res
+case $res in
+  ('.fixture/s/b') ;;
+  (*) exit 9 ;;
+esac
