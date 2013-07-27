@@ -1,0 +1,3 @@
+#!/bin/sh
+rm -f ../.fixture/t/p
+mkfifo ../.fixture/t/p

@@ -42,6 +42,8 @@ evalExpression = (file, environment, node, cb) ->
           v = stat.isDirectory()
         if node.arg == 'l'
           v = stat.isSymbolicLink()
+        if node.arg == 'p'
+          v = stat.isFIFO()
         return cb v
     when '-a'
       return evalExpression file, environment, node.arg[0], (res) ->
