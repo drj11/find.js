@@ -1,0 +1,11 @@
+#!/bin/sh
+
+alias find=${FIND:-find}
+
+res=$(find .fixture/r -links -3 -prune | sort)
+echo $res
+case $res in
+  ('.fixture/r/1
+.fixture/r/2') ;;
+  (*) exit 9 ;;
+esac

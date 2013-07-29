@@ -22,6 +22,9 @@ evalExpression = (file, environment, node, cb) ->
     when '-print'
       OUT.write file.name + '\n'
       return cb true
+    when '-prune'
+      environment.descend = false
+      return cb true
     when '-size'
       return file.stat (err, stat) ->
         x = node.arg
@@ -156,11 +159,13 @@ parseExpression = (exp) ->
   
 
 one = (file, expression, cb) ->
-  evalExpression file, expression.environment, expression.tree, ->
+  environment = expression.environment
+  environment.descend = true
+  evalExpression file, environment, expression.tree, ->
     file.stat (err, st) ->
       if err
         throw err
-      if st.isDirectory()
+      if environment.descend and st.isDirectory()
         mapdir file, expression, cb
       else
         cb()
