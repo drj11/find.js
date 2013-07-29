@@ -15,6 +15,10 @@ evalExpression = (file, environment, node, cb) ->
   switch node.op
     when '-depth'
       return cb true
+    when '-links'
+      return file.stat (err, stat) ->
+        x = node.arg
+        cb compare stat.nlink, x
     when '-print'
       OUT.write file.name + '\n'
       return cb true
@@ -28,12 +32,7 @@ evalExpression = (file, environment, node, cb) ->
         else
           # Measure in blocks (rounded up).
           s = Math.ceil(s / 512)
-        if x[0] == '+'
-          cb(s > +x)
-        else if x[0] == '-'
-          cb(s < -x)
-        else
-          cb(s == +x)
+        cb compare s, x
     when '-type'
       return file.stat (err, stat) ->
         if node.arg == 'f'
@@ -59,6 +58,18 @@ evalExpression = (file, environment, node, cb) ->
           evalExpression file, environment, node.arg[1], cb
   console.warn "Unknown expression", node
   return cb()
+
+compare = (a, x) ->
+  '''Compare the numeric attribute *a* of a file or directory
+  with the command line argument to an operator, handling
+  correctly the case of +n and -n.
+  '''
+  if x[0] == '+'
+    return (a > +x)
+  else if x[0] == '-'
+    return (a < -x)
+  else
+    return (a == +x)
 
 class File
   constructor: (@name) ->
