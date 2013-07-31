@@ -7,6 +7,7 @@ util = require 'util'
 async = require 'async'
 
 OUT = process.stdout
+EXIT_STATUS = 0
 
 evalExpression = (file, environment, node, cb) ->
   """*file* is an object with a .name property and a
@@ -18,6 +19,8 @@ evalExpression = (file, environment, node, cb) ->
       return cb true
     when '-exec;'
       return exec file, node, cb
+    when '-exec+'
+      return execAggregate file, node, cb
     when '-links'
       return file.stat (err, stat) ->
         x = node.arg
@@ -88,6 +91,24 @@ exec = (file, node, cb) ->
     # "the primary shall evaluate as true if the utility returns
     # a zero value as exit status"
     cb ! status
+
+execAggregate = (file, node, cb) ->
+  """We should aggregate here, but we're going to just exec once
+  per file."""
+  args = []
+  for item in node.arg
+    if item == '{}'
+      item = file.name
+    args.push item
+  child = spawn args[0], args[1..], stdio: 'inherit'
+  child.on 'close', (status) ->
+    # "If any invocation returns a non-zero value as exit
+    # status, the find utility shall return a non-zero exit
+    # status"
+    if status
+      EXIT_STATUS = status
+    # "the primary shall always evaluate as true"
+    cb true
 
 class File
   constructor: (@name) ->
@@ -246,4 +267,4 @@ if compiled.environment.depth
 
 async.each files, (name, cb) ->
   one (new File(name)), compiled, cb
-, process.exit
+, -> process.exit EXIT_STATUS
