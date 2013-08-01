@@ -4,7 +4,7 @@
   "description": "POSIX compliant find",
   "main": "code/find",
   "scripts": {
-    "test": "npm install ; FIND=${FIND:-$(pwd)/code/find.js} node_modules/.bin/urchin test",
+    "test": "npm install && FIND=${FIND:-$(pwd)/code/find.js} node_modules/.bin/urchin test",
     "prepublish": "{ echo '#!/usr/bin/env node'; coffee -p code/find.coffee;} > code/tmp.js && mv code/tmp.js code/find.js && chmod +x code/find.js"
   },
   "repository": {
