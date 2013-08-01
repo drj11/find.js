@@ -1,0 +1,11 @@
+#!/bin/sh
+
+alias find=${FIND:-find}
+
+# Bit tricky to portably test.
+res=$(find /etc/passwd -user 0)
+echo $res
+case $res in
+  ('/etc/passwd') ;;
+  (*) exit 9 ;;
+esac

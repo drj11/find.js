@@ -56,10 +56,11 @@ evalExpression = (file, environment, node, cb) ->
           v = stat.isFIFO()
         return cb v
     when '-user'
+      # :todo: move into compilation step.
       try
         user = posix.getpwnam node.arg
       catch error
-        return cb false
+        user = uid: +node.arg
       return file.stat (err, stat) ->
         cb(stat.uid == user.uid)
     when '-a'
