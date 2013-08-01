@@ -15,7 +15,8 @@
   "license": "BSD",
   "readmeFilename": "README.md",
   "dependencies": {
-    "async": "~0.2.8"
+    "async": "~0.2.8",
+    "posix": "~1.0.2"
   },
   "devDependencies": {
     "urchin": "*"
