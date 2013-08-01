@@ -7,7 +7,10 @@
     "test": "npm install ; FIND=${FIND:-$(pwd)/code/find.js} node_modules/.bin/urchin test",
     "prepublish": "{ echo '#!/usr/bin/env node'; coffee -p code/find.coffee;} > code/tmp.js && mv code/tmp.js code/find.js && chmod +x code/find.js"
   },
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/drj11/find.js.git"
+  },
   "author": "David Jones <drj@pobox.com>",
   "license": "BSD",
   "readmeFilename": "README.md",
@@ -17,5 +20,8 @@
   "devDependencies": {
     "urchin": "*"
   },
-  "gitHead": "71b309b222fb2d3a1f1b116255eec1c103ded537"
+  "gitHead": "71b309b222fb2d3a1f1b116255eec1c103ded537",
+  "directories": {
+    "test": "test"
+  }
 }
