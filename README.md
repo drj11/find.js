@@ -23,3 +23,11 @@ https://github.com/drj11/find.js
 * `-depth`
 * implicit `-print`
 * implicit `-a`
+
+## Technical Notes
+
+When using `-newer file` and *file* is symbolic link, should we
+use the mtime of the link or the file referenced by the link?
+The current implementation uses `fs.stat` and therefore uses the
+file referenced by the link. Follow-up question, should this be
+changed by the `-H` or `-L` options?
