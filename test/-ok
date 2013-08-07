@@ -1,0 +1,10 @@
+#!/bin/sh
+
+alias find=${FIND:-find}
+
+res=$(printf '%s\n' n y | find .fixture/r -type d -ok echo {} ';' 2>/dev/null)
+echo $res
+case $res in
+  ('.fixture/r/1') ;;
+  (*) exit 9 ;;
+esac

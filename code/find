@@ -8,6 +8,8 @@ async = require 'async'
 # https://github.com/melor/node-posix
 posix = require 'posix'
 
+IN = process.stdin
+ERR = process.stderr
 OUT = process.stdout
 EXIT_STATUS = 0
 
@@ -27,6 +29,8 @@ evalExpression = (file, environment, node, cb) ->
       return file.stat (err, stat) ->
         x = node.arg
         cb compare stat.nlink, x
+    when '-ok;'
+      return ok file, node, cb
     when '-print'
       OUT.write file.name + '\n'
       return cb true
@@ -102,6 +106,48 @@ exec = (file, node, cb) ->
     # a zero value as exit status"
     cb ! status
 
+buffer = ''
+afterRead = ->
+makeLine = (cb) ->
+  if '\n' in buffer
+    line = buffer.match(/^.*\n/)[0]
+    rest = buffer.replace /^.*\n/, ''
+    buffer = rest
+    afterRead = ->
+    cb line
+# Read one line from a stream. The line is passed to the cb function.
+readLine = (stream, cb) ->
+  readable = ->
+    while chunk = stream.read()
+      s = chunk.toString('binary')
+      buffer += s
+      afterRead()
+  if not stream.readableSet
+    stream.on 'readable', readable
+    stream.readableSet = true
+  afterRead = ->
+    makeLine cb
+  makeLine cb
+
+ok = (file, node, cb) ->
+  args = []
+  for item in node.arg
+    if item == '{}'
+      item = file.name
+    args.push item
+  ERR.write args.join(' ') + '..?'
+  readLine IN, (response) ->
+    if /^y/.test response
+      child = spawn args[0], args[1..], stdio: 'inherit'
+      child.on 'close', (status) ->
+        # "the primary shall evaluate as true if the utility returns
+        # a zero value as exit status"
+        cb ! status
+    else
+      """the command shall not be invoked and the value of the -ok
+      operand shall be false"""
+      cb false
+
 execAggregate = (file, node, cb) ->
   """We should aggregate here, but we're going to just exec once
   per file."""
@@ -176,7 +222,7 @@ parsePrec = (expression, precedence) ->
     # All the 0-ary operators.
     L = { op: expression[0] }
     tail = expression[1..]
-  else if expression[0] in ['-exec']
+  else if expression[0] in ['-exec', '-ok']
     L = null
     # Consume up to ';' or ['{}', '+']
     # L.op will set to either '-exec;' or '-exec+'
@@ -190,7 +236,7 @@ parsePrec = (expression, precedence) ->
         tail = expression[(i+2)..]
         break
     if not L
-      throw 'bad -exec ' + expression
+      throw "bad #{expression[0]} #{expression}"
   reduceTail L, tail, precedence
 
 reduceTail = (L, tail, precedence) ->
@@ -245,7 +291,7 @@ mapdir = (file, expression, done) ->
   fs.readdir file.name, (err, names) ->
     if err
       throw err
-    async.each names, (name, cb) ->
+    async.eachLimit names, 1, (name, cb) ->
       newname = pathjoin file.name, name
       one (new File(newname)), expression, cb
     , done
