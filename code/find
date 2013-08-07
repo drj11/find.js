@@ -31,8 +31,7 @@ evalExpression = (file, environment, node, cb) ->
         cb compare stat.nlink, x
     when '-newer'
       return file.stat (err, stat) ->
-        fs.stat node.arg, (err, f) ->
-          cb stat.mtime > f.mtime
+        cb stat.mtime > node.mtime
     when '-ok;'
       return ok file, node, cb
     when '-print'
@@ -185,6 +184,7 @@ class File
 
 # Not really a compiler, but there are some source to source
 # transformations we do to add an implicit -print.
+# -group, -newer, -user evaluate their arguments here.
 compileExpression = (tokenList) ->
   environment = {}
   if tokenList.length == 0
@@ -197,9 +197,18 @@ compileExpression = (tokenList) ->
   # example, 'find . -type -a -depth' is valid)
   environment.depth = ('-depth' in tokenList)
   [parsed, tail] = parseExpression tokenList
+  parsed = compileSingles parsed
   if /parse/.test process.env.FIND_DEBUG
     console.warn util.inspect parsed, depth: Infinity
   return { environment: environment, tree: parsed }
+
+compileSingles = (tree) ->
+  if tree.op == '-newer'
+    tree.mtime = fs.statSync(tree.arg).mtime
+  if tree.arg and tree.arg[1]
+    tree.arg[0] = compileSingles tree.arg[0]
+    tree.arg[1] = compileSingles tree.arg[1]
+  return tree
 
 # operator precedence table
 PREC =
