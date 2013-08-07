@@ -1,6 +1,7 @@
 #!/usr/bin/env coffee
 
 fs = require 'fs'
+path = require 'path'
 util = require 'util'
 {spawn} = require 'child_process'
 
@@ -305,15 +306,9 @@ mapdir = (file, expression, done) ->
     if err
       throw err
     async.eachLimit names, 1, (name, cb) ->
-      newname = pathjoin file.name, name
+      newname = path.join file.name, name
       one (new File(newname)), expression, cb
     , done
-
-pathjoin = (dir, name) ->
-  if /\/$/.test dir
-    return dir + name
-  else
-    return dir + "/" + name
 
 parseArguments = (args) ->
   files = []
