@@ -16,6 +16,7 @@ https://github.com/drj11/find.js
 * `-exec`
 * `-ok`
 * `-links`
+* `-newer`
 * `-print`
 * `-prune`
 * `-size`
