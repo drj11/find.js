@@ -29,6 +29,10 @@ evalExpression = (file, environment, node, cb) ->
       return file.stat (err, stat) ->
         x = node.arg
         cb compare stat.nlink, x
+    when '-newer'
+      return file.stat (err, stat) ->
+        fs.stat node.arg, (err, f) ->
+          cb stat.mtime > f.mtime
     when '-ok;'
       return ok file, node, cb
     when '-print'

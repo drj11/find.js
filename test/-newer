@@ -1,0 +1,14 @@
+#!/bin/sh
+
+alias find=${FIND:-find}
+
+mkdir -p .fixture/-newer
+touch -t 199003011159.59 .fixture/-newer/a
+touch -t 199003011200.00 .fixture/-newer/b
+touch -t 199003011200.01 .fixture/-newer/c
+res=$(find .fixture/-newer -type f -newer .fixture/-newer/b)
+echo $res
+case $res in
+  ('.fixture/-newer/c') ;;
+  (*) exit 9 ;;
+esac
